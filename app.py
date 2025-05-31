@@ -1,8 +1,7 @@
 import os
 import base64
-import json  # for safe JSON parsing
+import json
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # 🚀 Import CORS
 from dotenv import load_dotenv
 from openai import OpenAI
 from datetime import datetime
@@ -14,14 +13,16 @@ load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # 🚀 Enable CORS for all routes
 
 # Initialize OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Setup Google Sheets client
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("service_account_key.json", scope)
+
+# 🟢 Updated for Render: Read service account key from secret file
+service_account_path = os.environ.get("SERVICE_ACCOUNT_KEY_PATH", "service_account_key.json")
+creds = ServiceAccountCredentials.from_json_keyfile_name(service_account_path, scope)
 gc = gspread.authorize(creds)
 spreadsheet = gc.open("Daily Sales Tracker  ")  # Note: trailing spaces!
 
@@ -77,7 +78,6 @@ Output only JSON in this format:
     gpt_content = response.choices[0].message.content.strip()
     print("🔍 GPT raw response:", gpt_content)
 
-    # Clean up the GPT response
     if gpt_content.startswith("```"):
         gpt_content = gpt_content.strip("`").strip()
         if gpt_content.lower().startswith("json"):
@@ -89,7 +89,6 @@ Output only JSON in this format:
         print("❌ JSON parsing error:", e)
         return jsonify({"error": "Failed to parse GPT response", "details": str(e)}), 500
 
-    # Append to Google Sheets
     sheet = spreadsheet.worksheet("Form Responses 1")
     timestamp = datetime.now().strftime("%m/%d/%Y %I:%M:%S %p")
     new_row = [
@@ -105,11 +104,10 @@ Output only JSON in this format:
     ]
     sheet.append_row(new_row)
 
-    # ✅ Explicitly return 200 status!
     return jsonify({
         "message": "✅ Data extracted and saved to Google Sheets!",
         "data": gpt_result
-    }), 200  # Force 200 OK!
+    }), 200
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
