@@ -20,8 +20,8 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # Setup Google Sheets client
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
-# 🟢 Updated for Render: Read service account key from secret file
-service_account_path = os.environ.get("SERVICE_ACCOUNT_KEY_PATH", "service_account_key.json")
+# 🟢 Updated for Render: Read service account key from Render's secret file location
+service_account_path = "/etc/secrets/service-account-key"
 creds = ServiceAccountCredentials.from_json_keyfile_name(service_account_path, scope)
 gc = gspread.authorize(creds)
 spreadsheet = gc.open("Daily Sales Tracker  ")  # Note: trailing spaces!
