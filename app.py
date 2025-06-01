@@ -17,7 +17,9 @@ CORS(app)  # 🟢 Add this to enable CORS for **all** routes
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-service_account_path = os.environ.get("SERVICE_ACCOUNT_KEY_PATH", "service_account_key.json")
+
+# 🔴 Updated to use the Render path for secret files
+service_account_path = "/etc/secrets/service-account-key"
 creds = ServiceAccountCredentials.from_json_keyfile_name(service_account_path, scope)
 gc = gspread.authorize(creds)
 spreadsheet = gc.open("Daily Sales Tracker  ")  # Note: trailing spaces!
@@ -103,4 +105,4 @@ Output only JSON in this format:
     }), 200
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000) 
+    app.run(debug=True, port=5000)
