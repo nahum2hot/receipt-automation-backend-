@@ -2,26 +2,22 @@ import os
 import base64
 import json
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # 🟢 Add this
 from dotenv import load_dotenv
 from openai import OpenAI
 from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
-# Load environment variables
 load_dotenv()
 
-# Initialize Flask app
 app = Flask(__name__)
+CORS(app)  # 🟢 Add this to enable CORS for **all** routes
 
-# Initialize OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Setup Google Sheets client
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-
-# 🟢 Updated for Render: Read service account key from Render's secret file location
-service_account_path = "/etc/secrets/service-account-key"
+service_account_path = os.environ.get("SERVICE_ACCOUNT_KEY_PATH", "service_account_key.json")
 creds = ServiceAccountCredentials.from_json_keyfile_name(service_account_path, scope)
 gc = gspread.authorize(creds)
 spreadsheet = gc.open("Daily Sales Tracker  ")  # Note: trailing spaces!
@@ -76,8 +72,6 @@ Output only JSON in this format:
     )
 
     gpt_content = response.choices[0].message.content.strip()
-    print("🔍 GPT raw response:", gpt_content)
-
     if gpt_content.startswith("```"):
         gpt_content = gpt_content.strip("`").strip()
         if gpt_content.lower().startswith("json"):
@@ -86,7 +80,6 @@ Output only JSON in this format:
     try:
         gpt_result = json.loads(gpt_content)
     except json.JSONDecodeError as e:
-        print("❌ JSON parsing error:", e)
         return jsonify({"error": "Failed to parse GPT response", "details": str(e)}), 500
 
     sheet = spreadsheet.worksheet("Form Responses 1")
@@ -110,4 +103,4 @@ Output only JSON in this format:
     }), 200
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True, port=5000)
