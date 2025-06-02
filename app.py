@@ -9,16 +9,22 @@ from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
+# Load environment variables
 load_dotenv()
 
+# Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # 🟢 Add this to enable CORS for **all** routes
 
+# 🟢 Restrict CORS to your frontend domain for better security (replace the domain as needed)
+CORS(app, origins=["https://receipt-automation-frontend.onrender.com"])
+
+# Initialize OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# Setup Google Sheets client
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
-# 🔴 Updated to use the Render path for secret files
+# 🔴 Use Render's secret file path for the service account key
 service_account_path = "/etc/secrets/service-account-key"
 creds = ServiceAccountCredentials.from_json_keyfile_name(service_account_path, scope)
 gc = gspread.authorize(creds)
