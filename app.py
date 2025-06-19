@@ -11,6 +11,7 @@ from google.oauth2 import service_account
 from dotenv import load_dotenv
 
 load_dotenv()
+print("🧪 ENV Check - OPENAI_API_KEY:", os.getenv("OPENAI_API_KEY"))
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 if openai.api_key:
@@ -22,7 +23,7 @@ firebase_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
 firebase_creds = service_account.Credentials.from_service_account_info(json.loads(firebase_json))
 
 if not firebase_admin._apps:
-    firebase_admin.initialize_app(credentials=firebase_creds)
+    firebase_admin.initialize_app(credential=firebase_creds)
 
 import base64
 from datetime import datetime
