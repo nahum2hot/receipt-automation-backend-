@@ -6,8 +6,8 @@ from firebase_admin import firestore
 import importlib
 import json
 import openai
+from firebase_admin import credentials
 import os
-from google.oauth2 import service_account
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -20,10 +20,11 @@ else:
     print("❌ OpenAI key not found!")
 
 firebase_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
-firebase_creds = service_account.Credentials.from_service_account_info(json.loads(firebase_json))
+firebase_dict = json.loads(firebase_json)
+firebase_creds = credentials.Certificate(firebase_dict)
 
 if not firebase_admin._apps:
-    firebase_admin.initialize_app(credential=firebase_creds)
+    firebase_admin.initialize_app(firebase_creds)
 
 import base64
 from datetime import datetime
@@ -31,10 +32,6 @@ import re
 
 app = Flask(__name__)
 
-# Initialize Firebase once globally
-if not firebase_admin._apps:
-    cred = credentials.Certificate("service-account-key.json")
-    firebase_admin.initialize_app(cred)
 
 # Enhanced CORS configuration for Render deployment
 CORS(app, 
