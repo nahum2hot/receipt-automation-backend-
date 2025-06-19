@@ -2,14 +2,28 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 import os
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import firestore
 import importlib
 import json
 import openai
+import os
+from google.oauth2 import service_account
 from dotenv import load_dotenv
+
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
-print("🔑 Loaded OpenAI Key:", openai.api_key[:8], "********")
+
+if openai.api_key:
+    print("🔑 Loaded OpenAI Key:", openai.api_key[:8], "********")
+else:
+    print("❌ OpenAI key not found!")
+
+firebase_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+firebase_creds = service_account.Credentials.from_service_account_info(json.loads(firebase_json))
+
+if not firebase_admin._apps:
+    firebase_admin.initialize_app(credentials=firebase_creds)
+
 import base64
 from datetime import datetime
 import re
