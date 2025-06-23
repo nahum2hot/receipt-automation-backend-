@@ -9,6 +9,7 @@ import openai
 from firebase_admin import credentials
 import os
 from dotenv import load_dotenv
+import time
 
 load_dotenv()
 print("🧪 ENV Check - OPENAI_API_KEY:", os.getenv("OPENAI_API_KEY"))
@@ -159,6 +160,7 @@ def upload_receipt():
         return response
 
     try:
+        start = time.time()
         # 1. Validate request
         if 'image' not in request.files:
             return jsonify({
@@ -224,6 +226,7 @@ def upload_receipt():
             max_tokens=300,
             temperature=0
         )
+        print("OpenAI time:", time.time() - start)
 
         if response is None:
             return jsonify({
@@ -284,6 +287,7 @@ def upload_receipt():
         # 8. Prepare response (remove non-serializable fields)
         serializable_data = {k: v for k, v in final_receipt_data.items() if k != 'created_at'}
 
+        print("Total time:", time.time() - start)
         return jsonify({
             "success": True,
             "message": "Receipt processed successfully",
@@ -350,6 +354,12 @@ def test_extractor(profile_name):
             "profile": profile_name,
             "error": str(e)
         }), 500
+        
+@app.route("/test-delay")
+def test_delay():
+    import time
+    time.sleep(45)
+    return {"status": "done"}
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
